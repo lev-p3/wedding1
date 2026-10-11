@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Александр & Екатерина — Свадьба</title>
 
-<!-- ============ OPEN GRAPH / СОЦСЕТИ ============ -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Александр & Екатерина — 14 сентября 2026">
 <meta property="og:description" content="Приглашаем вас разделить с нами самый важный день. Озеро Комо, Италия.">
@@ -13,11 +12,8 @@
 <meta property="og:image" content="https://lev-p3.github.io/wedding1/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Александр и Екатерина — свадьба">
 <meta property="og:locale" content="ru_RU">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Александр & Екатерина — 14 сентября 2026">
-<meta name="twitter:description" content="Приглашаем вас разделить с нами самый важный день. Озеро Комо, Италия.">
 <meta name="twitter:image" content="https://lev-p3.github.io/wedding1/og-image.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,6 +28,9 @@
     --graphite:#1E1E1E;
     --muted:#8A8578;
     --line:rgba(30,30,30,.12);
+    --shadow-sm:0 4px 16px -8px rgba(30,30,30,.12);
+    --shadow-md:0 20px 50px -30px rgba(30,30,30,.35);
+    --shadow-lg:0 30px 80px -50px rgba(30,30,30,.45);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
@@ -99,6 +98,33 @@
   .burger.open span:nth-child(2){opacity:0;}
   .burger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);background:var(--graphite);}
 
+  /* ============ FLOATING MOBILE RSVP BUTTON ============ */
+  .float-rsvp{
+    position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));right:20px;
+    z-index:90;display:none;
+    align-items:center;gap:10px;
+    padding:16px 22px;border-radius:50px;
+    background:var(--graphite);color:#fff;
+    font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;
+    box-shadow:0 12px 40px -12px rgba(30,30,30,.6),0 4px 12px -4px rgba(30,30,30,.3);
+    transform:translateY(100px);opacity:0;
+    transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .5s ease,background .3s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .float-rsvp.visible{transform:translateY(0);opacity:1;}
+  .float-rsvp:active{background:var(--olive);transform:translateY(2px) scale(.97);}
+  .float-rsvp .pulse{
+    position:absolute;inset:0;border-radius:50px;
+    border:1px solid rgba(107,112,92,.5);
+    animation:floatPulse 2.4s ease-out infinite;
+    pointer-events:none;
+  }
+  @keyframes floatPulse{
+    0%{transform:scale(1);opacity:.8;}
+    100%{transform:scale(1.15);opacity:0;}
+  }
+  .float-rsvp svg{width:16px;height:16px;}
+
   /* ============ HERO ============ */
   .hero{
     min-height:100svh;min-height:100vh;
@@ -140,7 +166,7 @@
   .loc-card{
     display:grid;grid-template-columns:1fr 1fr;gap:0;
     background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden;
-    box-shadow:0 30px 80px -50px rgba(30,30,30,.35);
+    box-shadow:var(--shadow-lg);
   }
   .loc-info{padding:clamp(28px,6vw,58px);display:flex;flex-direction:column;justify-content:center;}
   .loc-info h3{font-size:clamp(1.5rem,5vw,2rem);margin:14px 0 6px;}
@@ -160,147 +186,371 @@
   .btn-outline{border-color:var(--line);color:var(--graphite);background:transparent;}
   .btn-outline:hover{border-color:var(--olive);color:var(--olive);transform:translateY(-2px);}
   .loc-note{margin-top:22px;font-size:.85rem;color:var(--muted);font-weight:300;border-left:2px solid var(--terracotta);padding-left:14px;line-height:1.65;}
+  .loc-map{position:relative;min-height:380px;background:#e8e3dc;}
+  .loc-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
 
-  /* === Интерактивная карта вместо фото === */
-  .loc-map{
-    position:relative;
-    min-height:380px;
-    background:#e8e3dc;
-  }
-  .loc-map iframe{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    border:0;
-  }
-
-  /* ============ TIMELINE ============ */
-  .timeline{background:var(--ivory);overflow:hidden;}
-  .tl-track{
-    position:relative;
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:0;
-    max-width:1100px;
-    margin:0 auto;
-  }
-  .tl-track::before{
-    content:'';position:absolute;top:34px;left:12%;right:12%;height:1px;
-    background:linear-gradient(90deg,transparent,var(--line) 15%,var(--line) 85%,transparent);
+  /* ============================================================
+     TIMELINE — переработано
+     ============================================================ */
+  .timeline{background:var(--ivory);position:relative;overflow:hidden;}
+  .timeline::before{
+    content:'';position:absolute;top:15%;left:50%;transform:translateX(-50%);
+    width:1px;height:70%;
+    background:linear-gradient(180deg,transparent,var(--line) 20%,var(--line) 80%,transparent);
     z-index:0;
   }
-  .tl-step{
+  .tl-list{
     position:relative;z-index:1;
-    display:flex;flex-direction:column;align-items:center;text-align:center;
-    padding:0 16px;
+    max-width:900px;margin:0 auto;
+    display:flex;flex-direction:column;gap:0;
   }
-  .tl-time{
-    font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,4.5vw,2rem);
-    color:var(--olive);font-weight:500;letter-spacing:.02em;
-    margin-bottom:16px;line-height:1;
+  .tl-item{
+    display:grid;
+    grid-template-columns:1fr 120px 1fr;
+    align-items:center;
+    padding:30px 0;
+    position:relative;
+    opacity:0;
+    transform:translateY(30px);
+    transition:opacity .9s cubic-bezier(.22,.61,.36,1),transform .9s cubic-bezier(.22,.61,.36,1);
   }
-  .tl-dot{
-    width:68px;height:68px;border-radius:50%;
-    background:var(--ivory);border:1px solid var(--line);
+  .tl-item.in{opacity:1;transform:translateY(0);}
+  .tl-item:nth-child(1){transition-delay:.05s;}
+  .tl-item:nth-child(2){transition-delay:.15s;}
+  .tl-item:nth-child(3){transition-delay:.25s;}
+  .tl-item:nth-child(4){transition-delay:.35s;}
+
+  /* Центральная точка */
+  .tl-marker{
+    display:flex;justify-content:center;align-items:center;
+    position:relative;z-index:3;
+  }
+  .tl-marker .ring{
+    width:86px;height:86px;border-radius:50%;
+    background:var(--ivory);
+    border:1px solid var(--line);
     display:flex;align-items:center;justify-content:center;
-    color:var(--olive);margin-bottom:22px;
+    color:var(--olive);
     transition:all .5s cubic-bezier(.22,.61,.36,1);
     position:relative;
   }
-  .tl-dot svg{width:26px;height:26px;stroke-width:1.4;}
-  .tl-step:hover .tl-dot{
+  .tl-marker .ring svg{width:30px;height:30px;stroke-width:1.3;}
+  .tl-marker .ring::before{
+    content:'';position:absolute;inset:-6px;border-radius:50%;
+    border:1px solid var(--olive);opacity:0;transform:scale(.85);
+    transition:all .5s ease;
+  }
+  .tl-item:hover .tl-marker .ring{
     background:var(--olive);border-color:var(--olive);color:#fff;
-    transform:translateY(-4px) scale(1.05);
-    box-shadow:0 16px 32px -14px rgba(107,112,92,.55);
+    transform:scale(1.08);
+    box-shadow:0 20px 40px -16px rgba(107,112,92,.55);
   }
-  .tl-step h4{
-    font-size:clamp(1.1rem,3.4vw,1.35rem);font-weight:500;
-    margin-bottom:8px;letter-spacing:.01em;
-  }
-  .tl-step p{
-    color:var(--muted);font-size:.85rem;font-weight:300;
-    line-height:1.6;max-width:200px;
-  }
-  .tl-step .tl-num{
-    position:absolute;top:-14px;font-family:'Cormorant Garamond',serif;
-    font-style:italic;font-size:.85rem;color:var(--muted);letter-spacing:.1em;
-    opacity:.6;
+  .tl-item:hover .tl-marker .ring::before{
+    opacity:.4;transform:scale(1);
   }
 
-  /* ============ RSVP ============ */
-  .rsvp{background:linear-gradient(180deg,#F3EFE9 0%,var(--ivory) 100%);}
+  /* Левая/правая колонки */
+  .tl-side{padding:0 26px;position:relative;}
+  .tl-side.left{text-align:right;}
+  .tl-side.right{text-align:left;}
+
+  .tl-time{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1.8rem,4.4vw,2.6rem);
+    color:var(--olive);font-weight:500;line-height:1;
+    letter-spacing:.01em;
+  }
+  .tl-time::after{
+    content:'';display:inline-block;width:24px;height:1px;
+    background:var(--line);margin-left:14px;vertical-align:middle;
+    transition:width .5s ease,background .5s ease;
+  }
+  .tl-side.left .tl-time::after{
+    margin-left:14px;margin-right:0;
+  }
+  .tl-side.right .tl-time::after{
+    display:none;
+  }
+  .tl-side.right .tl-time::before{
+    content:'';display:inline-block;width:24px;height:1px;
+    background:var(--line);margin-right:14px;vertical-align:middle;
+    transition:width .5s ease,background .5s ease;
+  }
+  .tl-item:hover .tl-time::after,
+  .tl-item:hover .tl-time::before{width:40px;background:var(--olive);}
+
+  .tl-title{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1.15rem,3vw,1.5rem);
+    font-weight:500;margin-bottom:6px;letter-spacing:.01em;
+  }
+  .tl-desc{
+    color:var(--muted);font-size:.87rem;font-weight:300;
+    line-height:1.6;max-width:240px;
+  }
+  .tl-side.left .tl-desc{margin-left:auto;}
+  .tl-side.right .tl-desc{margin-right:auto;}
+
+  /* Мобильная версия таймлайна */
+  @media (max-width:768px){
+    .timeline::before{left:32px;transform:none;top:8%;height:84%;}
+    .tl-list{gap:0;}
+    .tl-item{
+      grid-template-columns:64px 1fr;
+      grid-template-rows:auto auto;
+      padding:22px 0;
+      column-gap:20px;
+      row-gap:6px;
+    }
+    .tl-marker{
+      grid-column:1;grid-row:1 / 3;
+      align-self:start;
+      padding-top:4px;
+      justify-content:center;
+    }
+    .tl-marker .ring{
+      width:56px;height:56px;
+    }
+    .tl-marker .ring svg{width:22px;height:22px;}
+    .tl-side{grid-column:2;}
+    .tl-side.left{
+      grid-row:1;
+      text-align:left;
+      padding:0;
+      display:flex;flex-direction:column;
+    }
+    .tl-side.left .tl-time{font-size:1.35rem;margin-bottom:6px;}
+    .tl-side.left .tl-time::after{display:none;}
+    .tl-side.left .tl-time::before{
+      content:'';display:inline-block;width:20px;height:1px;
+      background:var(--olive);margin-right:10px;vertical-align:middle;
+    }
+    .tl-side.left .tl-title{font-size:1.15rem;margin-bottom:0;}
+    .tl-side.left .tl-desc{display:none;}
+    .tl-side.right{
+      grid-row:2;
+      text-align:left;
+      padding:0;
+    }
+    .tl-side.right .tl-time{display:none;}
+    .tl-side.right .tl-title{display:none;}
+    .tl-side.right .tl-desc{
+      font-size:.85rem;
+      max-width:none;
+      margin:0;
+    }
+    .tl-item:hover .tl-marker .ring{transform:none;background:var(--ivory);color:var(--olive);border-color:var(--line);box-shadow:none;}
+  }
+
+  /* ============================================================
+     RSVP — переработано
+     ============================================================ */
+  .rsvp{background:linear-gradient(180deg,#F3EFE9 0%,var(--ivory) 100%);position:relative;overflow:hidden;}
+  .rsvp::before{
+    content:'';position:absolute;top:-100px;right:-100px;width:300px;height:300px;
+    border-radius:50%;background:radial-gradient(circle,rgba(221,190,169,.25),transparent 70%);
+    pointer-events:none;
+  }
+  .rsvp::after{
+    content:'';position:absolute;bottom:-80px;left:-80px;width:240px;height:240px;
+    border-radius:50%;background:radial-gradient(circle,rgba(107,112,92,.12),transparent 70%);
+    pointer-events:none;
+  }
+
   .rsvp-wrap{
-    max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--line);
-    border-radius:4px;padding:clamp(24px,6vw,60px);
-    box-shadow:0 30px 80px -60px rgba(30,30,30,.35);
+    max-width:720px;margin:0 auto;position:relative;z-index:1;
+    background:#fff;border:1px solid var(--line);border-radius:6px;
+    padding:clamp(28px,5vw,54px);
+    box-shadow:var(--shadow-lg);
   }
+
+  /* Прогресс-бар */
+  .rsvp-progress{
+    position:relative;
+    margin-bottom:38px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--line);
+  }
+  .progress-track{
+    height:2px;background:var(--line);border-radius:2px;overflow:hidden;
+    position:relative;
+  }
+  .progress-fill{
+    height:100%;width:0;background:linear-gradient(90deg,var(--olive),var(--terracotta));
+    border-radius:2px;
+    transition:width .6s cubic-bezier(.22,.61,.36,1);
+  }
+  .progress-label{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-top:12px;
+    font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--muted);font-weight:500;
+  }
+  .progress-label .progress-percent{color:var(--olive);font-weight:600;}
+
+  /* Секции формы */
+  .form-section{margin-bottom:32px;}
+  .form-section-head{
+    display:flex;align-items:center;gap:14px;margin-bottom:20px;
+  }
+  .form-section-num{
+    font-family:'Cormorant Garamond',serif;font-style:italic;
+    font-size:.9rem;color:var(--olive);letter-spacing:.08em;
+    display:flex;align-items:center;gap:8px;flex-shrink:0;
+  }
+  .form-section-num::after{
+    content:'';display:inline-block;width:20px;height:1px;background:var(--olive);
+  }
+  .form-section-title{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1.1rem,3vw,1.35rem);font-weight:500;
+    letter-spacing:.01em;
+  }
+
   .field{margin-bottom:22px;}
+  .field:last-child{margin-bottom:0;}
   .field label{
-    display:block;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:9px;font-weight:500;
+    display:block;font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px;font-weight:500;
   }
-  .field input[type="text"],.field input[type="number"],.field textarea{
-    width:100%;padding:14px 16px;border:1px solid var(--line);border-radius:2px;
+  .field input[type="text"],.field input[type="number"]{
+    width:100%;padding:16px 18px;
+    border:1px solid var(--line);border-radius:3px;
     background:var(--ivory);font-family:inherit;font-size:1rem;color:var(--graphite);
-    transition:border-color .3s ease,box-shadow .3s ease;
+    transition:border-color .3s ease,box-shadow .3s ease,background .3s ease;
     -webkit-appearance:none;appearance:none;
   }
-  .field input:focus,.field textarea:focus{outline:none;border-color:var(--olive);box-shadow:0 0 0 3px rgba(107,112,92,.1);}
-  .radio-group{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .field input[type="text"]:focus,.field input[type="number"]:focus{
+    outline:none;border-color:var(--olive);background:#fff;
+    box-shadow:0 0 0 4px rgba(107,112,92,.1);
+  }
+  .field input::placeholder{color:rgba(138,133,120,.55);font-weight:300;}
+
+  /* Radio cards с иконками */
+  .radio-group{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
   .radio-card{
-    position:relative;border:1px solid var(--line);border-radius:2px;padding:16px 12px;
-    cursor:pointer;transition:all .3s ease;text-align:center;background:var(--ivory);
-    display:flex;flex-direction:column;justify-content:center;min-height:74px;
+    position:relative;
+    border:1px solid var(--line);border-radius:4px;
+    padding:22px 16px;
+    cursor:pointer;
+    transition:all .35s cubic-bezier(.22,.61,.36,1);
+    text-align:center;background:var(--ivory);
+    overflow:hidden;
   }
   .radio-card input{position:absolute;opacity:0;pointer-events:none;}
-  .radio-card .rc-title{font-size:.82rem;font-weight:500;display:block;line-height:1.3;}
-  .radio-card .rc-sub{font-size:.68rem;color:var(--muted);margin-top:3px;font-weight:300;}
-  .radio-card:hover{border-color:var(--olive);}
-  .radio-card.selected{border-color:var(--olive);background:#fff;box-shadow:0 0 0 3px rgba(107,112,92,.1);}
-  .radio-card.selected::after{content:'';position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:var(--olive);}
+  .radio-card .rc-icon{
+    display:flex;align-items:center;justify-content:center;
+    width:38px;height:38px;margin:0 auto 12px;
+    color:var(--olive);transition:transform .4s ease,color .4s ease;
+  }
+  .radio-card .rc-icon svg{width:22px;height:22px;stroke-width:1.4;}
+  .radio-card .rc-title{
+    display:block;font-family:'Cormorant Garamond',serif;
+    font-size:1.05rem;font-weight:500;letter-spacing:.01em;
+    margin-bottom:2px;line-height:1.2;
+  }
+  .radio-card .rc-sub{
+    display:block;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted);font-weight:400;
+  }
+  .radio-card:hover{
+    border-color:var(--olive);transform:translateY(-2px);
+    box-shadow:var(--shadow-sm);
+  }
+  .radio-card:hover .rc-icon{transform:scale(1.1);}
+  .radio-card.selected{
+    border-color:var(--olive);background:#fff;
+    box-shadow:0 0 0 3px rgba(107,112,92,.15);
+  }
+  .radio-card.selected .rc-icon{
+    transform:scale(1.1);
+  }
+  .radio-card.selected::after{
+    content:'✓';
+    position:absolute;top:10px;right:12px;
+    width:20px;height:20px;border-radius:50%;
+    background:var(--olive);color:#fff;
+    font-size:.7rem;line-height:20px;text-align:center;font-weight:600;
+    animation:checkPop .4s cubic-bezier(.22,.61,.36,1);
+  }
+  @keyframes checkPop{
+    0%{transform:scale(0);}
+    60%{transform:scale(1.2);}
+    100%{transform:scale(1);}
+  }
+
+  /* Dynamic field — плавное раскрытие */
   .dynamic-field{
     max-height:0;opacity:0;overflow:hidden;
     transition:max-height .6s cubic-bezier(.22,.61,.36,1),opacity .5s ease,margin .5s ease;
     margin-bottom:0;
   }
-  .dynamic-field.open{max-height:520px;opacity:1;margin-bottom:22px;}
+  .dynamic-field.open{max-height:520px;opacity:1;margin-top:20px;margin-bottom:0;}
   .dynamic-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  .checkbox-group{display:flex;flex-wrap:wrap;gap:8px;}
+
+  /* Чипы напитков */
+  .chip-group{display:flex;flex-wrap:wrap;gap:10px;}
   .chip{
-    display:inline-flex;align-items:center;gap:8px;
-    border:1px solid var(--line);border-radius:40px;padding:9px 15px;
-    font-size:.78rem;cursor:pointer;transition:all .3s ease;background:var(--ivory);
+    display:inline-flex;align-items:center;gap:10px;
+    border:1px solid var(--line);border-radius:40px;
+    padding:11px 18px;
+    font-size:.82rem;font-weight:400;
+    cursor:pointer;transition:all .35s ease;
+    background:var(--ivory);
     user-select:none;-webkit-tap-highlight-color:transparent;
   }
   .chip input{display:none;}
-  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--line);transition:background .3s ease;}
-  .chip:hover{border-color:var(--olive);}
+  .chip .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--line);
+    transition:background .35s ease,transform .35s ease;
+  }
+  .chip:hover{border-color:var(--olive);background:#fff;transform:translateY(-1px);}
   .chip.selected{border-color:var(--olive);background:#fff;}
-  .chip.selected .dot{background:var(--olive);}
+  .chip.selected .dot{background:var(--olive);transform:scale(1.2);}
+
+  /* Submit */
   .submit-btn{
-    width:100%;padding:17px;background:var(--graphite);color:#fff;border-radius:2px;
-    font-size:.74rem;letter-spacing:.22em;text-transform:uppercase;font-weight:500;
-    transition:all .4s ease;position:relative;overflow:hidden;margin-top:8px;
+    width:100%;padding:20px;background:var(--graphite);color:#fff;
+    border-radius:3px;
+    font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;font-weight:500;
+    transition:all .4s ease;position:relative;overflow:hidden;
+    margin-top:12px;
     -webkit-tap-highlight-color:transparent;
   }
-  .submit-btn:hover{background:var(--olive);letter-spacing:.28em;}
+  .submit-btn::before{
+    content:'';position:absolute;top:0;left:-100%;
+    width:100%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+    transition:left .6s ease;
+  }
+  .submit-btn:hover{background:var(--olive);letter-spacing:.32em;}
+  .submit-btn:hover::before{left:100%;}
   .submit-btn:disabled{opacity:.6;cursor:wait;}
   .spinner{
     width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
-    border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-3px;margin-right:8px;
+    border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:-3px;margin-right:10px;
   }
   @keyframes spin{to{transform:rotate(360deg);}}
-  .success{text-align:center;padding:34px 16px;display:none;}
+
+  /* Success */
+  .success{text-align:center;padding:40px 20px;display:none;}
   .success.show{display:block;animation:fadeIn .6s ease;}
   @keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
   .success .check{
-    width:58px;height:58px;border-radius:50%;border:1px solid var(--olive);
-    display:flex;align-items:center;justify-content:center;margin:0 auto 20px;
-    color:var(--olive);font-size:1.5rem;
+    width:70px;height:70px;border-radius:50%;
+    border:1px solid var(--olive);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 24px;color:var(--olive);font-size:1.8rem;
+    animation:checkScale .6s cubic-bezier(.22,.61,.36,1);
+  }
+  @keyframes checkScale{
+    0%{transform:scale(0);opacity:0;}
+    60%{transform:scale(1.1);}
+    100%{transform:scale(1);opacity:1;}
   }
   .success h3{font-size:clamp(1.5rem,5vw,2rem);margin-bottom:10px;}
-  .success p{color:var(--muted);font-weight:300;font-size:.92rem;}
+  .success p{color:var(--muted);font-weight:300;font-size:.95rem;}
 
   /* ============ DRESS CODE ============ */
   .dresscode{background:var(--ivory);}
@@ -321,14 +571,12 @@
   .swatch.active .circle{box-shadow:0 0 0 2px var(--olive),0 10px 26px -10px rgba(30,30,30,.4);transform:scale(1.06);}
   .swatch .name{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);transition:color .3s ease;}
   .swatch.active .name{color:var(--graphite);font-weight:500;}
-
   .hint-toggle{
     text-align:center;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
     color:var(--olive);margin-bottom:28px;transition:opacity .3s ease;
   }
   .hint-toggle.pulse{animation:hintPulse 2.4s ease-in-out infinite;}
   @keyframes hintPulse{0%,100%{opacity:.6;}50%{opacity:1;}}
-
   .mood-reveal{
     max-height:0;overflow:hidden;opacity:0;
     transition:max-height 1.1s cubic-bezier(.22,.61,.36,1),opacity .7s ease,margin .6s ease;
@@ -363,7 +611,6 @@
     opacity:0;transition:opacity .5s ease;
   }
   .mood-card:hover::after{opacity:1;}
-
   .mood-collapse{
     display:block;margin:34px auto 0;
     font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;
@@ -545,10 +792,13 @@
 
   @media (max-width:640px){
     section{padding:56px 0;}
-    .hero{padding:100px 18px 90px;}
+    .hero{padding:100px 18px 110px;}
     .hero-names{font-size:clamp(2rem,13vw,3rem);}
     .hero-meta{letter-spacing:.22em;}
-    .scroll-hint{font-size:.58rem;bottom:20px;}
+    .scroll-hint{font-size:.58rem;bottom:20px;display:none;}
+
+    /* Плавающая кнопка RSVP */
+    .float-rsvp{display:inline-flex;}
 
     .loc-info{padding:26px 22px;}
     .loc-meta{grid-template-columns:repeat(3,1fr);gap:10px;}
@@ -556,54 +806,38 @@
     .btn{width:100%;}
     .loc-map{min-height:260px;}
 
-    /* TIMELINE: вертикальный вид */
-    .tl-track{
-      grid-template-columns:1fr;
-      gap:0;
-      max-width:520px;
+    /* RSVP мобильный */
+    .rsvp-wrap{padding:26px 20px;border-radius:5px;}
+    .rsvp-progress{margin-bottom:28px;}
+    .radio-group{grid-template-columns:1fr;gap:10px;}
+    .radio-card{
+      display:flex;align-items:center;gap:14px;
+      padding:16px 18px;text-align:left;
+      min-height:auto;
     }
-    .tl-track::before{
-      top:0;bottom:0;left:33px;right:auto;width:1px;height:auto;
-      background:linear-gradient(180deg,transparent,var(--line) 8%,var(--line) 92%,transparent);
-    }
-    .tl-step{
-      flex-direction:row;
-      text-align:left;
-      align-items:flex-start;
-      padding:20px 0;
-      gap:20px;
-    }
-    .tl-time{
-      position:absolute;
-      left:0;top:22px;
-      font-size:1.25rem;
-      width:32px;
-      text-align:left;
+    .radio-card .rc-icon{
+      width:44px;height:44px;flex-shrink:0;
       margin:0;
-      color:var(--olive);
+      background:var(--ivory);border-radius:50%;
     }
-    .tl-dot{
-      width:54px;height:54px;flex-shrink:0;
-      margin:0 0 0 12px;
-      background:var(--ivory);
-      border:1px solid var(--line);
+    .radio-card.selected .rc-icon{
+      background:var(--olive);color:#fff;transform:none;
     }
-    .tl-dot svg{width:22px;height:22px;}
-    .tl-text{flex:1;padding-top:4px;}
-    .tl-step h4{font-size:1.15rem;margin-bottom:4px;}
-    .tl-step p{font-size:.84rem;max-width:none;}
-    .tl-step .tl-num{display:none;}
-
-    .rsvp-wrap{padding:24px 20px;border-radius:3px;}
-    .radio-group{grid-template-columns:1fr;gap:8px;}
-    .radio-card{padding:14px 16px;text-align:left;min-height:auto;flex-direction:row;align-items:center;justify-content:flex-start;gap:10px;}
-    .radio-card .rc-title{font-size:.9rem;}
-    .radio-card .rc-sub{font-size:.72rem;margin-top:0;margin-left:auto;opacity:.7;}
-    .radio-card.selected::after{position:static;margin-left:6px;flex-shrink:0;}
+    .radio-card .rc-icon svg{width:22px;height:22px;}
+    .radio-card .rc-text{flex:1;}
+    .radio-card .rc-title{font-size:1.05rem;margin-bottom:2px;}
+    .radio-card .rc-sub{font-size:.66rem;}
+    .radio-card.selected::after{
+      position:static;margin-left:auto;
+      flex-shrink:0;
+    }
     .dynamic-grid{grid-template-columns:1fr;gap:12px;}
-    .chip{padding:8px 13px;font-size:.76rem;}
-    .submit-btn{padding:16px;font-size:.72rem;}
+    .chip{padding:10px 15px;font-size:.78rem;}
+    .submit-btn{padding:18px;font-size:.72rem;}
+    .form-section{margin-bottom:26px;}
+    .form-section-head{margin-bottom:14px;gap:10px;}
 
+    /* DRESS CODE */
     .palette{gap:8px;margin:22px 0 10px;}
     .swatch .circle{width:46px;height:46px;border-width:2px;margin-bottom:7px;}
     .swatch .name{font-size:.56rem;letter-spacing:.14em;}
@@ -629,7 +863,7 @@
     .lb-prev{left:0;}
     .lb-next{right:0;}
 
-    footer{padding:56px 20px 36px;}
+    footer{padding:56px 20px 36px;padding-bottom:calc(110px + env(safe-area-inset-bottom));}
     .footer-contact{flex-direction:column;gap:18px;}
 
     .admin-panel{max-height:92vh;}
@@ -646,6 +880,7 @@
     .loc-meta > div:last-child{grid-column:span 2;}
     .swatch .circle{width:42px;height:42px;}
     .mood-imgs{grid-template-columns:1fr 1fr;gap:6px;}
+    .float-rsvp{padding:14px 18px;font-size:.68rem;}
   }
 </style>
 </head>
@@ -666,6 +901,15 @@
     </button>
   </div>
 </header>
+
+<!-- Плавающая кнопка RSVP (только на мобильном) -->
+<a href="#rsvp" class="float-rsvp" id="floatRsvp">
+  <span class="pulse"></span>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6">
+    <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/>
+  </svg>
+  <span>Анкета</span>
+</a>
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="#location">Локация</a>
@@ -730,7 +974,6 @@
         <p class="loc-note">У главного входа виллы доступна парковка для гостей. Пожалуйста, приезжайте заранее — церемония начнётся точно в 16:30.</p>
       </div>
 
-      <!-- === ИНТЕРАКТИВНАЯ КАРТА === -->
       <div class="loc-map">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2763.5!2d9.1395!3d45.9821!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47869d5cf1a5c4d5%3A0x9c9c4e1c8f9a8c1e!2sVilla%20del%20Balbianello!5e0!3m2!1sru!2s!4v1600000000000"
@@ -747,6 +990,7 @@
   </div>
 </section>
 
+<!-- ============ TIMELINE ============ -->
 <section class="timeline" id="timeline">
   <div class="container">
     <div class="sec-head reveal">
@@ -756,66 +1000,83 @@
       <p>Каждый момент этого дня мы хотим провести вместе с вами</p>
     </div>
 
-    <div class="tl-track reveal d1">
-      <div class="tl-step">
-        <span class="tl-num">01</span>
-        <div class="tl-time">15:30</div>
-        <div class="tl-dot" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8 21h8M12 17v4M7 4h10l-1 9a4 4 0 0 1-8 0L7 4Z"/>
-          </svg>
+    <div class="tl-list">
+      <!-- 01 -->
+      <div class="tl-item">
+        <div class="tl-side left">
+          <div class="tl-time">15:30</div>
         </div>
-        <div class="tl-text">
-          <h4>Сбор гостей</h4>
-          <p>Welcome-drink и лёгкие закуски на террасе</p>
+        <div class="tl-marker">
+          <div class="ring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 21h8M12 17v4M7 4h10l-1 9a4 4 0 0 1-8 0L7 4Z"/>
+            </svg>
+          </div>
         </div>
-      </div>
-
-      <div class="tl-step">
-        <span class="tl-num">02</span>
-        <div class="tl-time">16:30</div>
-        <div class="tl-dot" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10Z"/>
-          </svg>
-        </div>
-        <div class="tl-text">
-          <h4>Свадебная церемония</h4>
-          <p>Обмен клятвами в саду виллы</p>
+        <div class="tl-side right">
+          <div class="tl-title">Сбор гостей</div>
+          <p class="tl-desc">Welcome-drink и лёгкие закуски на террасе</p>
         </div>
       </div>
 
-      <div class="tl-step">
-        <span class="tl-num">03</span>
-        <div class="tl-time">17:30</div>
-        <div class="tl-dot" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 3v7a3 3 0 0 0 6 0V3M8 10v11M19 3c-1.5 3-2 5-2 7a2 2 0 0 0 4 0c0-2-.5-4-2-7ZM19 12v9"/>
-          </svg>
+      <!-- 02 -->
+      <div class="tl-item">
+        <div class="tl-side left">
+          <div class="tl-title">Свадебная церемония</div>
+          <p class="tl-desc">Обмен клятвами в саду виллы</p>
         </div>
-        <div class="tl-text">
-          <h4>Праздничный ужин</h4>
-          <p>Итальянская кухня и тосты за молодых</p>
+        <div class="tl-marker">
+          <div class="ring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 11c0 5.5-7 10-7 10Z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="tl-side right">
+          <div class="tl-time">16:30</div>
         </div>
       </div>
 
-      <div class="tl-step">
-        <span class="tl-num">04</span>
-        <div class="tl-time">21:00</div>
-        <div class="tl-dot" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M16.9 16.9l2.1 2.1M3 12h3M18 12h3M4.9 19.1l2.1-2.1M16.9 7.1l2.1-2.1"/>
-          </svg>
+      <!-- 03 -->
+      <div class="tl-item">
+        <div class="tl-side left">
+          <div class="tl-time">17:30</div>
         </div>
-        <div class="tl-text">
-          <h4>Торт & Party</h4>
-          <p>Свадебный торт, первый танец и танцы до утра</p>
+        <div class="tl-marker">
+          <div class="ring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 3v7a3 3 0 0 0 6 0V3M8 10v11M19 3c-1.5 3-2 5-2 7a2 2 0 0 0 4 0c0-2-.5-4-2-7ZM19 12v9"/>
+            </svg>
+          </div>
+        </div>
+        <div class="tl-side right">
+          <div class="tl-title">Праздничный ужин</div>
+          <p class="tl-desc">Итальянская кухня и тосты за молодых</p>
+        </div>
+      </div>
+
+      <!-- 04 -->
+      <div class="tl-item">
+        <div class="tl-side left">
+          <div class="tl-title">Торт & Party</div>
+          <p class="tl-desc">Свадебный торт, первый танец и танцы до утра</p>
+        </div>
+        <div class="tl-marker">
+          <div class="ring">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v3M12 18v3M4.9 4.9l2.1 2.1M16.9 16.9l2.1 2.1M3 12h3M18 12h3M4.9 19.1l2.1-2.1M16.9 7.1l2.1-2.1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="tl-side right">
+          <div class="tl-time">21:00</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ============ RSVP ============ -->
 <section class="rsvp" id="rsvp">
   <div class="container">
     <div class="sec-head reveal">
@@ -826,49 +1087,99 @@
     </div>
 
     <div class="rsvp-wrap reveal d1">
+      <div class="rsvp-progress">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-label">
+          <span>Заполнено</span>
+          <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+      </div>
+
       <form id="rsvpForm" novalidate>
-        <div class="field">
-          <label for="guestName">Имя и фамилия</label>
-          <input type="text" id="guestName" name="guestName" placeholder="Анна Иванова" required />
+
+        <div class="form-section">
+          <div class="form-section-head">
+            <span class="form-section-num">01</span>
+            <span class="form-section-title">Как вас зовут?</span>
+          </div>
+          <div class="field">
+            <label for="guestName">Имя и фамилия</label>
+            <input type="text" id="guestName" name="guestName" placeholder="Анна Иванова" required />
+          </div>
         </div>
 
-        <div class="field">
-          <label>Формат участия</label>
+        <div class="form-section">
+          <div class="form-section-head">
+            <span class="form-section-num">02</span>
+            <span class="form-section-title">Формат участия</span>
+          </div>
           <div class="radio-group" id="radioGroup">
             <label class="radio-card selected">
               <input type="radio" name="attendance" value="solo" checked />
-              <span class="rc-title">Один / одна</span>
-              <span class="rc-sub">Только я</span>
+              <div class="rc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="rc-text">
+                <span class="rc-title">Один / одна</span>
+                <span class="rc-sub">Только я</span>
+              </div>
             </label>
             <label class="radio-card">
               <input type="radio" name="attendance" value="couple" />
-              <span class="rc-title">С парой</span>
-              <span class="rc-sub">Вместе с +1</span>
+              <div class="rc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="rc-text">
+                <span class="rc-title">С парой</span>
+                <span class="rc-sub">Вместе с +1</span>
+              </div>
             </label>
             <label class="radio-card">
               <input type="radio" name="attendance" value="family" />
-              <span class="rc-title">С семьёй</span>
-              <span class="rc-sub">С детьми</span>
+              <div class="rc-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                  <circle cx="17" cy="11" r="2"/>
+                </svg>
+              </div>
+              <div class="rc-text">
+                <span class="rc-title">С семьёй</span>
+                <span class="rc-sub">С детьми</span>
+              </div>
             </label>
           </div>
-        </div>
 
-        <div class="dynamic-field" id="dynamicField">
-          <div class="dynamic-grid">
-            <div class="field">
-              <label for="companions">Имена спутников</label>
-              <input type="text" id="companions" name="companions" placeholder="Имя и фамилия" />
-            </div>
-            <div class="field" id="childrenField">
-              <label for="children">Количество детей</label>
-              <input type="number" id="children" name="children" min="0" max="10" value="0" />
+          <div class="dynamic-field" id="dynamicField">
+            <div class="dynamic-grid">
+              <div class="field">
+                <label for="companions">Имена спутников</label>
+                <input type="text" id="companions" name="companions" placeholder="Имя и фамилия" />
+              </div>
+              <div class="field" id="childrenField">
+                <label for="children">Количество детей</label>
+                <input type="number" id="children" name="children" min="0" max="10" value="0" />
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="field">
-          <label>Предпочтения по напиткам</label>
-          <div class="checkbox-group" id="drinksGroup">
+        <div class="form-section">
+          <div class="form-section-head">
+            <span class="form-section-num">03</span>
+            <span class="form-section-title">Предпочтения по напиткам</span>
+          </div>
+          <div class="chip-group" id="drinksGroup">
             <label class="chip"><input type="checkbox" value="Белое вино" /><span class="dot"></span>Белое вино</label>
             <label class="chip"><input type="checkbox" value="Красное вино" /><span class="dot"></span>Красное вино</label>
             <label class="chip"><input type="checkbox" value="Игристое" /><span class="dot"></span>Игристое</label>
@@ -1019,7 +1330,7 @@
     </div>
     <div class="admin-body" id="adminBody"></div>
     <div class="admin-foot">
-      <span class="hint">Ctrl+Shift+A — открыть / закрыть. Ответы гостей синхронизируются в Google Sheets.</span>
+      <span class="hint">Ctrl+Shift+A — открыть / закрыть</span>
       <button class="admin-btn danger" id="adminClearAll">Очистить локальные</button>
     </div>
   </div>
@@ -1029,29 +1340,18 @@
 (function(){
   'use strict';
 
-  /* ============================================================
-     GOOGLE SHEETS — URL веб-приложения Apps Script
-     ============================================================ */
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydEMqmDwEF4pTJDoDQgBsbhjv4YXJlJ3Br9DareujaDxFX6E_O7x5jpjQtSXwhiMed/exec';
 
-  /* ============================================================
-     STORAGE
-     ============================================================ */
   const STORAGE_KEY = 'wedding_rsvp_entries';
   const DRAFT_KEY = 'wedding_rsvp_draft';
 
-  function getEntries(){
-    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-    catch(e){ return []; }
-  }
+  function getEntries(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }catch(e){ return []; } }
   function saveEntries(list){ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
   function addEntry(entry){
     const list = getEntries();
     entry.id = entry.id || ('id_' + Date.now() + '_' + Math.random().toString(36).slice(2,8));
     entry.createdAt = entry.createdAt || new Date().toISOString();
-    list.push(entry);
-    saveEntries(list);
-    return entry;
+    list.push(entry); saveEntries(list); return entry;
   }
   function updateEntry(id, patch){
     const list = getEntries();
@@ -1060,9 +1360,7 @@
   }
   function deleteEntry(id){ saveEntries(getEntries().filter(e => e.id !== id)); }
 
-  /* ============================================================
-     HEADER
-     ============================================================ */
+  /* HEADER */
   const header = document.getElementById('header');
   const onScroll = () => {
     if(window.scrollY > 40) header.classList.add('scrolled');
@@ -1071,9 +1369,26 @@
   window.addEventListener('scroll', onScroll, {passive:true});
   onScroll();
 
-  /* ============================================================
-     MOBILE MENU
-     ============================================================ */
+  /* FLOATING RSVP — показываем, когда hero уходит из вида */
+  const floatRsvp = document.getElementById('floatRsvp');
+  const heroSection = document.getElementById('hero');
+  const rsvpSection = document.getElementById('rsvp');
+  function updateFloatRsvp(){
+    if(window.innerWidth > 640){ floatRsvp.classList.remove('visible'); return; }
+    const heroBottom = heroSection.getBoundingClientRect().bottom;
+    const rsvpRect = rsvpSection.getBoundingClientRect();
+    const rsvpVisible = rsvpRect.top < window.innerHeight && rsvpRect.bottom > 0;
+    if(heroBottom < 100 && !rsvpVisible){
+      floatRsvp.classList.add('visible');
+    } else {
+      floatRsvp.classList.remove('visible');
+    }
+  }
+  window.addEventListener('scroll', updateFloatRsvp, {passive:true});
+  window.addEventListener('resize', updateFloatRsvp);
+  updateFloatRsvp();
+
+  /* MOBILE MENU */
   const burger = document.getElementById('burger');
   const mobileMenu = document.getElementById('mobileMenu');
   burger.addEventListener('click', () => {
@@ -1089,9 +1404,7 @@
     });
   });
 
-  /* ============================================================
-     REVEAL ON SCROLL
-     ============================================================ */
+  /* REVEAL */
   const revealEls = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
@@ -1100,9 +1413,16 @@
   }, {threshold:0.1, rootMargin:'0px 0px -40px 0px'});
   revealEls.forEach(el => io.observe(el));
 
-  /* ============================================================
-     RSVP FORM
-     ============================================================ */
+  /* TIMELINE REVEAL */
+  const tlItems = document.querySelectorAll('.tl-item');
+  const tlIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ e.target.classList.add('in'); tlIO.unobserve(e.target); }
+    });
+  }, {threshold:0.2});
+  tlItems.forEach(el => tlIO.observe(el));
+
+  /* RSVP FORM */
   const form = document.getElementById('rsvpForm');
   const radioGroup = document.getElementById('radioGroup');
   const dynamicField = document.getElementById('dynamicField');
@@ -1112,6 +1432,8 @@
   const guestNameInput = document.getElementById('guestName');
   const submitBtn = document.getElementById('submitBtn');
   const successScreen = document.getElementById('successScreen');
+  const progressFill = document.getElementById('progressFill');
+  const progressPercent = document.getElementById('progressPercent');
 
   function updateDynamic(){
     const val = document.querySelector('input[name="attendance"]:checked').value;
@@ -1131,6 +1453,23 @@
         childrenInput.value = 0;
       }
     }
+    updateProgress();
+  }
+
+  /* Progress bar */
+  function updateProgress(){
+    let score = 0, total = 3;
+    if(guestNameInput.value.trim().length > 0) score++;
+    const attendance = document.querySelector('input[name="attendance"]:checked');
+    if(attendance){
+      if(attendance.value === 'solo') score++;
+      else if(companionsInput.value.trim().length > 0) score++;
+    }
+    const drinksChecked = document.querySelectorAll('#drinksGroup input:checked').length;
+    if(drinksChecked > 0) score++;
+    const percent = Math.round((score / total) * 100);
+    progressFill.style.width = percent + '%';
+    progressPercent.textContent = percent + '%';
   }
 
   radioGroup.addEventListener('change', (e) => {
@@ -1149,7 +1488,12 @@
       input.checked = !input.checked;
       chip.classList.toggle('selected', input.checked);
       saveDraft();
+      updateProgress();
     });
+  });
+
+  [guestNameInput, companionsInput, childrenInput].forEach(el => {
+    el.addEventListener('input', () => { saveDraft(); updateProgress(); });
   });
 
   function collectFormData(){
@@ -1190,19 +1534,18 @@
       });
     }
     updateDynamic();
+    updateProgress();
   }
 
-  [guestNameInput, companionsInput, childrenInput].forEach(el => el.addEventListener('input', saveDraft));
   updateDynamic();
   restoreDraft();
+  updateProgress();
 
-  /* --- Отправка формы: Google Sheets + localStorage --- */
   function sendToGoogleSheets(data){
-    // no-cors: Apps Script не отдаёт CORS-заголовки, но данные доходят
     return fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // text/plain обходит preflight
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(data)
     });
   }
@@ -1227,7 +1570,6 @@
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner"></span>Отправка…';
 
-    // Параллельно: в Google Sheets и в localStorage
     Promise.allSettled([
       sendToGoogleSheets(data),
       Promise.resolve(addEntry(data))
@@ -1238,9 +1580,7 @@
     });
   });
 
-  /* ============================================================
-     CALENDAR
-     ============================================================ */
+  /* CALENDAR */
   document.getElementById('addCalendar').addEventListener('click', (e) => {
     e.preventDefault();
     const ics = [
@@ -1263,9 +1603,7 @@
     document.body.removeChild(a); URL.revokeObjectURL(url);
   });
 
-  /* ============================================================
-     DRESS CODE
-     ============================================================ */
+  /* DRESS CODE */
   const moodData = {
     sage: {
       label: 'шалфей',
@@ -1403,9 +1741,7 @@
 
   moodCollapse.addEventListener('click', collapseMood);
 
-  /* ============================================================
-     LIGHTBOX
-     ============================================================ */
+  /* LIGHTBOX */
   const lightbox = document.getElementById('lightbox');
   const lbImg = document.getElementById('lbImg');
   const lbClose = document.getElementById('lbClose');
@@ -1445,9 +1781,7 @@
     if(e.key === 'ArrowRight') navLightbox(1);
   });
 
-  /* ============================================================
-     ADMIN PANEL
-     ============================================================ */
+  /* ADMIN PANEL */
   const adminOverlay = document.getElementById('adminOverlay');
   const adminBody = document.getElementById('adminBody');
   const adminClose = document.getElementById('adminClose');
@@ -1469,7 +1803,7 @@
   function renderAdmin(){
     const list = getEntries();
     if(!list.length){
-      adminBody.innerHTML = '<div class="admin-empty">Пока нет ни одного локального ответа. Все ответы гостей сохраняются в Google Таблице.</div>';
+      adminBody.innerHTML = '<div class="admin-empty">Пока нет ни одного локального ответа.</div>';
       return;
     }
     adminBody.innerHTML = '';
@@ -1499,9 +1833,7 @@
     adminBody.querySelectorAll('.admin-row').forEach(row => {
       const id = row.dataset.id;
       row.querySelector('[data-action="delete"]').addEventListener('click', () => {
-        if(confirm('Удалить этот ответ из локального хранилища?')){
-          deleteEntry(id); renderAdmin();
-        }
+        if(confirm('Удалить этот ответ?')){ deleteEntry(id); renderAdmin(); }
       });
       row.querySelector('[data-action="edit"]').addEventListener('click', () => enterEditMode(row, id));
     });
@@ -1513,30 +1845,20 @@
     row.classList.add('editing');
     row.innerHTML = `
       <div class="admin-edit-grid">
-        <div class="full">
-          <label>Имя и фамилия</label>
-          <input type="text" data-field="guestName" value="${escapeAttr(entry.guestName || '')}">
-        </div>
-        <div>
-          <label>Формат участия</label>
+        <div class="full"><label>Имя и фамилия</label>
+          <input type="text" data-field="guestName" value="${escapeAttr(entry.guestName || '')}"></div>
+        <div><label>Формат</label>
           <select data-field="attendance">
             <option value="solo" ${entry.attendance==='solo'?'selected':''}>Один / одна</option>
             <option value="couple" ${entry.attendance==='couple'?'selected':''}>С парой</option>
             <option value="family" ${entry.attendance==='family'?'selected':''}>С семьёй</option>
-          </select>
-        </div>
-        <div>
-          <label>Дети</label>
-          <input type="number" min="0" max="10" data-field="children" value="${entry.children||0}">
-        </div>
-        <div class="full">
-          <label>Имена спутников</label>
-          <input type="text" data-field="companions" value="${escapeAttr(entry.companions || '')}">
-        </div>
-        <div class="full">
-          <label>Напитки (через запятую)</label>
-          <input type="text" data-field="drinks" value="${escapeAttr((entry.drinks||[]).join(', '))}">
-        </div>
+          </select></div>
+        <div><label>Дети</label>
+          <input type="number" min="0" max="10" data-field="children" value="${entry.children||0}"></div>
+        <div class="full"><label>Спутники</label>
+          <input type="text" data-field="companions" value="${escapeAttr(entry.companions || '')}"></div>
+        <div class="full"><label>Напитки (через запятую)</label>
+          <input type="text" data-field="drinks" value="${escapeAttr((entry.drinks||[]).join(', '))}"></div>
       </div>
       <div class="admin-row-actions">
         <button class="admin-btn save" data-action="save">Сохранить</button>
@@ -1562,9 +1884,7 @@
   adminClose.addEventListener('click', closeAdmin);
   adminOverlay.addEventListener('click', (e) => { if(e.target === adminOverlay) closeAdmin(); });
   adminClearAll.addEventListener('click', () => {
-    if(confirm('Удалить ВСЕ локальные ответы? Записи в Google Таблице останутся.')){
-      saveEntries([]); renderAdmin();
-    }
+    if(confirm('Удалить ВСЕ локальные ответы?')){ saveEntries([]); renderAdmin(); }
   });
   document.addEventListener('keydown', (e) => {
     if(e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a' || e.code === 'KeyA')){
@@ -1575,9 +1895,7 @@
     if(e.key === 'Escape' && adminOverlay.classList.contains('open')) closeAdmin();
   });
 
-  /* ============================================================
-     SMOOTH ANCHOR SCROLL
-     ============================================================ */
+  /* SMOOTH ANCHOR */
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', (e) => {
       const id = link.getAttribute('href');
